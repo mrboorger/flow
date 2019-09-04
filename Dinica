@@ -1,0 +1,56 @@
+struct edge
+{
+    int u, flow, cap;
+};
+
+const int maxn = 500050;
+const int maxm = 500050;
+const int inf = 1e9 + 4324;
+
+edge e[maxm * 2];
+int lvl[maxn], point[maxn];
+vector <int> g[maxn];
+int s, t;
+
+bool bfs()
+{
+    fill(lvl, lvl + maxn, -1);
+    queue <int> q;
+    q.push(s);
+    lvl[s] = 0;
+    while(!q.empty() && lvl[t] == -1)
+    {
+        int v = q.front();
+        q.pop();
+        for(int to : g[v])
+        {
+            if (lvl[e[to].u] == -1 && e[to].flow < e[to].cap)
+            {
+                lvl[e[to].u] = lvl[v] + 1;
+                q.push(e[to].u);
+            }
+        }
+    }
+    return (lvl[t] > -1);
+}
+
+
+int dfs(int v, int flow)
+{
+    if (flow == 0) return 0;
+    if (v == t) return flow;
+    for(point[v]; point[v] < int(g[v].size()); ++point[v])
+    {
+        int num = g[v][point[v]];
+        int to = e[num].u;
+        if (lvl[v] + 1 != lvl[to]) continue;
+        int f = dfs(to, min(flow, e[num].cap - e[num].flow));
+        if (f > 0)
+        {
+            e[num].flow += f;
+            e[num ^ 1].flow -= f;
+            return f;
+        }
+    }
+    return 0;
+}
