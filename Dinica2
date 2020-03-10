@@ -79,3 +79,16 @@ int dfs(int v, int flow)
     }
     return 0;
 }
+
+
+//main
+while(bfs())
+{
+    fill(point, point + n, 0);
+    int kek = 1;
+    while(kek > 0)
+    {
+        kek = dfs(s, inf);
+        cnt += kek;
+    }
+}
