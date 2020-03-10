@@ -1,0 +1,79 @@
+struct edge
+{
+    int cap;
+    int cost;
+    int from;
+    int to;
+    int flow;
+    edge()
+    {
+
+    }
+    edge(int x, int y, int z, int q)
+    {
+        cap = x;
+        cost = y;
+        from = z;
+        to = q;
+        flow = 0;
+    }
+};
+
+vector <int> g[maxn * 2];
+edge e[maxn * 4 * 2];
+int id = 0;
+
+void add_edge(int from, int to, int cap, int cost)
+{
+    g[from].pb(id);
+    e[id] = edge(cap, cost, from, to);
+    g[to].pb(id ^ 1);
+    e[id ^ 1] = edge(0, -cost, to, from);
+    id += 2;
+}
+
+int s = 0;
+int t = maxn * 2 - 1;
+ll ans = 0;
+
+int d[maxn * 2];
+int pr[maxn * 2];
+int k; //current flow size
+
+bool ford_bellman()
+{
+    if (k == 0) return false;
+    fill(d, d + maxn * 2, inf);
+    d[s] = 0;
+    pr[s] = -1;
+    bool flag = true;
+    while(flag)
+    {
+        flag = false;
+        for(int i = 0; i < id; ++i)
+            if (d[e[i].from] < inf && e[i].cap - e[i].flow > 0 && d[e[i].from] + e[i].cost < d[e[i].to])
+            {
+                d[e[i].to] = d[e[i].from] + e[i].cost;
+                pr[e[i].to] = i;
+                flag = true;
+            }
+    }
+    if (d[t] == inf) return false;
+    int sz = k;
+    int v = t;
+    while(v != s)
+    {
+        sz = min(sz, e[pr[v]].cap - e[pr[v]].flow);
+        v = e[pr[v]].from;
+    }
+    v = t;
+    while(v != s)
+    {
+        ans += sz * e[pr[v]].cost;
+        e[pr[v]].flow += sz;
+        e[pr[v] ^ 1].flow -= sz;
+        v = e[pr[v]].from;
+    }
+    k -= sz;
+    return true;
+}
