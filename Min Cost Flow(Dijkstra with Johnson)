@@ -1,0 +1,118 @@
+struct edge
+{
+    int cap;
+    int cost;
+    int from;
+    int to;
+    int flow;
+    int w; //potential
+    edge()
+    {
+    }
+    edge(int x, int y, int z, int q)
+    {
+        cap = x;
+        cost = y;
+        from = z;
+        to = q;
+        flow = 0;
+    }
+};
+
+vector <int> g[maxn];
+edge e[maxn * 3 * 2];
+int id = 0;
+
+void add_edge(int from, int to, int cap, int cost)
+{
+    g[from].pb(id);
+    e[id] = edge(cap, cost, from, to);
+    g[to].pb(id ^ 1);
+    e[id ^ 1] = edge(0, -cost, to, from);
+    id += 2;
+}
+
+int s = 0;
+int t = maxn - 1;
+ll ans = 0;
+
+int d[maxn];
+int pr[maxn]; //predok-rebro
+int n, k; //current flow size
+
+void ford_bellman()
+{
+    fill(d, d + n + 2, inf);
+    d[s] = 0;
+    bool flag = true;
+    while(flag)
+    {
+        flag = false;
+        for(int i = 0; i < id; ++i)
+            if (d[e[i].from] < inf && e[i].cap - e[i].flow > 0 && d[e[i].from] + e[i].cost < d[e[i].to])
+            {
+                d[e[i].to] = d[e[i].from] + e[i].cost;
+                pr[e[i].to] = i;
+                flag = true;
+            }
+    }
+    return;
+}
+
+int W[maxn];
+
+bool dijkstra()
+{
+    if (d[t] >= inf) return false;
+    int sz = k;
+    int v = t;
+    while(v != s)
+    {
+        sz = min(sz, e[pr[v]].cap - e[pr[v]].flow);
+        v = e[pr[v]].from;
+    }
+    v = t;
+    while(v != s)
+    {
+        ans += sz * e[pr[v]].cost;
+        e[pr[v]].flow += sz;
+        e[pr[v] ^ 1].flow -= sz;
+        v = e[pr[v]].from;
+    }
+    k -= sz;
+
+    fill(W, W + n + 2, inf);
+    W[s] = 0;
+    pr[s] = -1;
+    priority_queue <pair <int, int>, vector <pair <int, int>>, greater<pair <int, int>>> q;
+    q.push({0, s});
+    while(!q.empty())
+    {
+        int len = q.top().F;
+        int v = q.top().S;
+        q.pop();
+        if (len > W[v]) continue;
+        for(int i : g[v])
+            if (e[i].cap - e[i].flow > 0 && len + e[i].w < W[e[i].to])
+        {
+            W[e[i].to] = len + e[i].w;
+            pr[e[i].to] = i;
+            q.push({W[e[i].to], e[i].to});
+        }
+    }
+    for(int i = 0; i < n + 2; ++i)
+    {
+        d[i] += W[i];
+        d[i] = min(d[i], inf);
+//        cerr << d[i] << endl;
+    }
+    for(int i = 0; i < id; ++i)
+        e[i].w = e[i].cost + d[e[i].from] - d[e[i].to];
+    return true;
+}
+
+//main
+ford_bellman();
+for(int i = 0; i < id; ++i)
+    e[i].w = e[i].cost + d[e[i].from] - d[e[i].to];
+    while(k > 0 && dijkstra());
