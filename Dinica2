@@ -21,7 +21,7 @@ const int maxm = 500050;
 const int inf = 1e9 + 4324;
 
 vector <int> g[maxn];
-edge e[maxn * 2];
+edge e[maxm * 2];
 int id = 0;
 
 void add_edge(int from, int to, int cap)
