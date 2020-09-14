@@ -112,6 +112,7 @@ bool dijkstra()
 }
 
 //main
+k = 1000;
 ford_bellman();
 for(int i = 0; i < id; ++i)
     e[i].w = e[i].cost + d[e[i].from] - d[e[i].to];
