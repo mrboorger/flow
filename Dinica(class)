@@ -1,0 +1,94 @@
+class Dinica {
+public:
+  explicit Dinica(int nodes_cnt)
+      : g(nodes_cnt), lvl(nodes_cnt), point(nodes_cnt) {
+    assert(nodes_cnt > 1);
+  }
+
+  void SetSource(int source) { Dinica::source = source; }
+  void SetEstuary(int estuary) { Dinica::estuary = estuary; }
+
+  int GetSource() const { return source; }
+  int GetEstuary() const { return estuary; }
+
+  void AddEdge(int from, int to, int cap) {
+    g[from].push_back(edges.size());
+    edges.emplace_back(from, to, cap);
+    g[to].push_back(edges.size());
+    edges.emplace_back(to, from, 0);
+  }
+
+  int CalcMaxFlow() {
+    int flow_sz = 0;
+    while (BFS()) {
+      fill(point.begin(), point.end(), 0);
+      while (true) {
+        int plus_flow = DFS(source, kInf);
+        flow_sz += plus_flow;
+        if (plus_flow == 0) {
+          break;
+        }
+      }
+    }
+    return flow_sz;
+  }
+
+private:
+  struct Edge {
+    int from;
+    int to;
+    int cap;
+    int flow;
+
+    Edge() = default;
+
+    Edge(int from, int to, int cap) : from(from), to(to), cap(cap), flow(0) {}
+  };
+
+  static constexpr int kInf = 1e9 + 4324;
+
+  std::vector<std::vector<int>> g;
+  std::vector<Edge> edges;
+  std::vector<int> lvl;
+  std::vector<int> point;
+  int source = -1;
+  int estuary = -1;
+
+  bool BFS() {
+    fill(lvl.begin(), lvl.end(), -1);
+    std::queue<int> q;
+    q.push(source);
+    lvl[source] = 0;
+    while (!q.empty() && lvl[estuary] == -1) {
+      int v = q.front();
+      q.pop();
+      for (int to : g[v]) {
+        if (lvl[edges[to].to] == -1 && edges[to].flow < edges[to].cap) {
+          lvl[edges[to].to] = lvl[v] + 1;
+          q.push(edges[to].to);
+        }
+      }
+    }
+    return (lvl[estuary] > -1);
+  }
+
+  int DFS(int v, int flow) {
+    if (flow == 0)
+      return 0;
+    if (v == estuary)
+      return flow;
+    for (point[v]; point[v] < int(g[v].size()); ++point[v]) {
+      int num = g[v][point[v]];
+      int to = edges[num].to;
+      if (lvl[v] + 1 != lvl[to])
+        continue;
+      int f = DFS(to, std::min(flow, edges[num].cap - edges[num].flow));
+      if (f > 0) {
+        edges[num].flow += f;
+        edges[num ^ 1].flow -= f;
+        return f;
+      }
+    }
+    return 0;
+  }
+};
